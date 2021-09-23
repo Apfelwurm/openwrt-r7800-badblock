@@ -52,7 +52,7 @@ jobs:
       run: ./scripts/feeds install -a
       working-directory: ./openwrt
     - name: newconfig
-      run: "echo 'CONFIG_TARGET_ipq806x=y\nCONFIG_TARGET_ipq806x_generic=y\nDEVICE_netgear_r7800=y\nCONFIG_SIGNED_PACKAGES=y\n' >> .config"
+      run: "echo 'CONFIG_TARGET_ipq806x=y\nCONFIG_TARGET_ipq806x_generic=y\nCONFIG_TARGET_ipq806x_generic_DEVICE_netgear_r7800=y\nCONFIG_SIGNED_PACKAGES=y\n' >> .config"
       working-directory: ./openwrt 
     - name: newconfig
       run: make defconfig
