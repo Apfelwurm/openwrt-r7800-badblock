@@ -35,13 +35,16 @@ jobs:
     - name: check local openwrt lastversion
       id: local_openwrt_version 
       run: echo "::set-output name=version::$(lastversion https://github.com/Apfelwurm/openwrt-r7800-badblock)"  
+    - name: check openwrt tag
+      id: openwrt_tag
+      run: echo "::set-output name=tag::$(lastversion https://github.com/openwrt/openwrt --format tag)"    
     - name: checkout openwrt
       if: ${{ steps.openwrt_version.outputs.version != steps.local_openwrt_version.outputs.version }}
       uses: actions/checkout@v2
       with:
         repository: openwrt/openwrt
         path: 'openwrt'
-        ref: ${{steps.openwrt_version.outputs.version}}
+        ref: ${{steps.openwrt_tag.outputs.tag}}
     - name: updatefeeds
       run: ./scripts/feeds update
       working-directory: ./openwrt
