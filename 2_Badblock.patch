@@ -1,0 +1,20 @@
+From: Alexander Volz <Alexander@volzit.de>
+Date: Thu, 23 Sep 2021 02:44:29 +0200
+Subject: 2 Bad Block fix for r7800
+
+diff --git a/target/linux/ipq806x/files/arch/arm/boot/dts/qcom-ipq8064-d7800.dts b/target/linux/ipq806x/files/arch/arm/boot/dts/qcom-ipq8064-d7800.dts
+index 229596b082..93614efe6b 100644
+--- a/target/linux/ipq806x/files/arch/arm/boot/dts/qcom-ipq8064-d7800.dts
++++ b/target/linux/ipq806x/files/arch/arm/boot/dts/qcom-ipq8064-d7800.dts
+@@ -236,9 +236,9 @@
+ 				reg = <0x1480000 0x0400000>;
+ 			};
+ 
+-			ubi@1880000 {
++			ubi@18C0000 {
+ 				label = "ubi";
+-				reg = <0x1880000 0x1C00000>;
++				reg = <0x18C0000 0x1C00000>;
+ 			};
+ 
+ 			netgear@3480000 {
