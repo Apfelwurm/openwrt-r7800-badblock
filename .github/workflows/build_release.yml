@@ -39,7 +39,7 @@ jobs:
       if: ${{ steps.openwrt_version.outputs.version != steps.local_openwrt_version.outputs.version }}
       uses: actions/checkout@v2
       with:
-        repository: https://github.com/openwrt/openwrt
+        repository: openwrt/openwrt
         path: 'openwrt'
         ref: ${{steps.openwrt_version.outputs.version}}
     - name: updatefeeds
@@ -66,8 +66,6 @@ jobs:
     - name: move image  
       run: mv bin/targets/ipq806x/generic/openwrt-ipq806x-generic-netgear_r7800-squashfs-nand-sysupgrade.bin ../openwrt-${{ steps.openwrt_version.outputs.version }}-ipq806x-generic-netgear_r7800-${{matrix.badblocks}}_badblocks-squashfs-nand-sysupgrade.bin
       working-directory: ./openwrt 
-    - name: remove openwrt
-      run: rm -rf openwrt
     - name: make release
       if: ${{ steps.openwrt_version.outputs.version != steps.local_openwrt_version.outputs.version }}
       uses: softprops/action-gh-release@v1
