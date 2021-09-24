@@ -63,11 +63,14 @@ jobs:
     - name: build openwrt  
       run: make -j$(nproc) V=sc
       working-directory: ./openwrt 
-    - name: move image  
-      run: mv bin/targets/ipq806x/generic/openwrt-ipq806x-generic-netgear_r7800-squashfs-nand-factory.bin ../openwrt-${{ steps.openwrt_version.outputs.version }}-ipq806x-generic-netgear_r7800-${{matrix.badblocks}}_badblocks-squashfs-nand-factory.bin
+    - name: find images
+      run: find -name '*ipq806*.bin*'
       working-directory: ./openwrt 
     - name: move image  
-      run: mv bin/targets/ipq806x/generic/openwrt-ipq806x-generic-netgear_r7800-squashfs-nand-sysupgrade.bin ../openwrt-${{ steps.openwrt_version.outputs.version }}-ipq806x-generic-netgear_r7800-${{matrix.badblocks}}_badblocks-squashfs-nand-sysupgrade.bin
+      run: mv bin/targets/ipq806x/generic/openwrt-ipq806x-generic-netgear_r7800-squashfs-factory.bin ../openwrt-${{ steps.openwrt_version.outputs.version }}-ipq806x-generic-netgear_r7800-${{matrix.badblocks}}_badblocks-squashfs-factory.bin
+      working-directory: ./openwrt 
+    - name: move image  
+      run: mv bin/targets/ipq806x/generic/openwrt-ipq806x-generic-netgear_r7800-squashfs-sysupgrade.bin ../openwrt-${{ steps.openwrt_version.outputs.version }}-ipq806x-generic-netgear_r7800-${{matrix.badblocks}}_badblocks-squashfs-sysupgrade.bin
       working-directory: ./openwrt 
     - name: make release
       if: ${{ steps.openwrt_version.outputs.version != steps.local_openwrt_version.outputs.version }}
