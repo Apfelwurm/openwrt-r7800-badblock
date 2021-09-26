@@ -29,55 +29,69 @@ jobs:
       uses: actions/checkout@v2
     - name: install prereqs
       run: sudo apt-get update -y; sudo apt-get install --no-install-recommends -y git make flex gawk grep libc-dev libz-dev perl python3 rsync subversion unzip build-essential wget python file libncurses-dev python3-pip; pip install lastversion
-    - name: check openwrt lastversion
-      id: openwrt_version
-      run: echo "::set-output name=version::$(lastversion https://github.com/openwrt/openwrt)"    
-    - name: check local openwrt lastversion
-      id: local_openwrt_version 
-      run: echo "::set-output name=version::$(lastversion https://github.com/Apfelwurm/openwrt-r7800-badblock)"  
+
     - name: check openwrt tag
       id: openwrt_tag
-      run: echo "::set-output name=tag::$(lastversion https://github.com/openwrt/openwrt --format tag)"    
+      run: echo "::set-output name=tag::$(lastversion https://github.com/openwrt/openwrt --format tag)"
+    - name: check local tag
+      id: local_openwrt_tag
+      run: echo "::set-output name=tag::$(lastversion https://github.com/Apfelwurm/openwrt-r7800-badblock --format tag)"
+    - name: format openwrt tag
+      id: openwrt_tag_formatted
+      run: echo "::set-output name=tagformatted::$(lastversion https://github.com/openwrt/openwrt --format tag | sed 's|v||g')"
     - name: checkout openwrt
-      if: ${{ steps.openwrt_version.outputs.version != steps.local_openwrt_version.outputs.version }}
+      if: ${{ steps.openwrt_tag.outputs.tag != steps.local_openwrt_tag.outputs.tag }}
       uses: actions/checkout@v2
       with:
         repository: openwrt/openwrt
         path: 'openwrt'
         ref: ${{steps.openwrt_tag.outputs.tag}}
     - name: updatefeeds
+      if: ${{ steps.openwrt_tag.outputs.tag != steps.local_openwrt_tag.outputs.tag }}
       run: ./scripts/feeds update
       working-directory: ./openwrt
     - name: installfeeds
+      if: ${{ steps.openwrt_tag.outputs.tag != steps.local_openwrt_tag.outputs.tag }}
       run: ./scripts/feeds install -a
       working-directory: ./openwrt
+    - name: get default config and strip it
+      if: ${{ steps.openwrt_tag.outputs.tag != steps.local_openwrt_tag.outputs.tag }}
+      run: "curl https://downloads.openwrt.org/releases/${{ steps.openwrt_tag_formatted.outputs.tagformatted }}/targets/ipq806x/generic/config.buildinfo | sed 's|^.*asrock.*$||g' | sed 's|^.*buffalo.*$||g' | sed 's|^.*compex.*$||g' | sed 's|^.*edgecore.*$||g' | sed 's|^.*linksys.*$||g' | sed 's|^.*nec_wg.*$||g' | sed 's|^.*qcom_ipq8064-ap.*$||g' | sed 's|^.*tplink.*$||g' | sed 's|^.*ubnt_unifi.*$||g'| sed 's|^.*zyxel.*$||g'| sed 's|^.*qcom_ipq8064-db149.*$||g' | sed 's|^.*netgear_d.*$||g' | sed 's|^.*netgear_r75.*$||g' | sed '/^$/d' >> .config"
+      working-directory: ./openwrt  
     - name: newconfig
-      run: "echo 'CONFIG_TARGET_ipq806x=y\nCONFIG_TARGET_ipq806x_generic=y\nCONFIG_TARGET_ipq806x_generic_DEVICE_netgear_r7800=y\nCONFIG_SIGNED_PACKAGES=y\n' >> .config"
+      if: ${{ steps.openwrt_tag.outputs.tag != steps.local_openwrt_tag.outputs.tag }}
+      run: "echo 'CONFIG_SIGNED_PACKAGES=y\n' >> .config"
       working-directory: ./openwrt 
     - name: newconfig
+      if: ${{ steps.openwrt_tag.outputs.tag != steps.local_openwrt_tag.outputs.tag }}
       run: make defconfig
       working-directory: ./openwrt
     - name: patch device
+      if: ${{ steps.openwrt_tag.outputs.tag != steps.local_openwrt_tag.outputs.tag }}
       run: git apply ../${{matrix.badblocks}}_Badblock.patch
       working-directory: ./openwrt    
     - name: build openwrt  
+      if: ${{ steps.openwrt_tag.outputs.tag != steps.local_openwrt_tag.outputs.tag }}
       run: make -j$(nproc) V=sc
       working-directory: ./openwrt 
     - name: find images
+      if: ${{ steps.openwrt_tag.outputs.tag != steps.local_openwrt_tag.outputs.tag }}
       run: find -name '*ipq806*.bin*'
       working-directory: ./openwrt 
     - name: move image  
-      run: mv bin/targets/ipq806x/generic/openwrt-ipq806x-generic-netgear_r7800-squashfs-factory.bin ../openwrt-${{ steps.openwrt_version.outputs.version }}-ipq806x-generic-netgear_r7800-${{matrix.badblocks}}_badblocks-squashfs-factory.bin
+      if: ${{ steps.openwrt_tag.outputs.tag != steps.local_openwrt_tag.outputs.tag }}
+      run: mv ./bin/targets/ipq806x/generic/openwrt-ipq806x-generic-netgear_r7800-squashfs-factory.bin ../openwrt-${{ steps.openwrt_tag_formatted.outputs.tagformatted }}-ipq806x-generic-netgear_r7800-${{matrix.badblocks}}_badblocks-squashfs-factory.bin
       working-directory: ./openwrt 
     - name: move image  
-      run: mv bin/targets/ipq806x/generic/openwrt-ipq806x-generic-netgear_r7800-squashfs-sysupgrade.bin ../openwrt-${{ steps.openwrt_version.outputs.version }}-ipq806x-generic-netgear_r7800-${{matrix.badblocks}}_badblocks-squashfs-sysupgrade.bin
+      if: ${{ steps.openwrt_tag.outputs.tag != steps.local_openwrt_tag.outputs.tag }}
+      run: mv ./bin/targets/ipq806x/generic/openwrt-ipq806x-generic-netgear_r7800-squashfs-sysupgrade.bin ../openwrt-${{ steps.openwrt_tag_formatted.outputs.tagformatted }}-ipq806x-generic-netgear_r7800-${{matrix.badblocks}}_badblocks-squashfs-sysupgrade.bin
       working-directory: ./openwrt 
     - name: make release
-      if: ${{ steps.openwrt_version.outputs.version != steps.local_openwrt_version.outputs.version }}
+      if: ${{ steps.openwrt_tag.outputs.tag != steps.local_openwrt_tag.outputs.tag }}
       uses: softprops/action-gh-release@v1
       with:
-        name: ${{ steps.openwrt_version.outputs.version }}
-        tag_name: ${{ steps.openwrt_version.outputs.version }}
+        name: ${{ steps.openwrt_tag.outputs.tag }}
+        tag_name: ${{ steps.openwrt_tag.outputs.tag }}
         files: |
           ./openwrt*.bin
       env:
