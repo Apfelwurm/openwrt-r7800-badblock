@@ -1,9 +1,9 @@
 name: openwrt_R7800_build
 
 on:
-  schedule:
+  #schedule:
     # * is a special character in YAML so you have to quote this string
-    - cron:  '30 14 * * *'
+    #- cron:  '30 14 * * *'
   push:
     branches: 
     - main
