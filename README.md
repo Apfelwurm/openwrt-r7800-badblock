@@ -1,3 +1,6 @@
+> :warning: **this is currently not working!**
+
+
 # openwrt build for the Netgear R7800 Nighthawk with bad blocks
 
 This repository houses newer openwrt builds for the Netgear R7800 Nighthawk with bad blocks since this seems to occur more often.
